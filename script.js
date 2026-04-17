@@ -96,7 +96,7 @@ function initSmoothScroll() {
 // Navbar-only theme toggle
 function initThemeToggle() {
   const toggleBtn = document.getElementById('themeToggle');
-  if (!toggleBtn) {
+  if (!toggleBtn || toggleBtn.dataset.themeManaged === 'true') {
     return;
   }
 
@@ -123,3 +123,16 @@ document.addEventListener('DOMContentLoaded', () => {
   initSmoothScroll();
   initThemeToggle();
 });
+
+const themeToggle = document.getElementById('themeToggle');
+if (themeToggle) {
+  themeToggle.dataset.themeManaged = 'true';
+  themeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('light-mode');
+    const isLight = document.body.classList.contains('light-mode');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  });
+  if (localStorage.getItem('theme') === 'light') {
+    document.body.classList.add('light-mode');
+  }
+}
