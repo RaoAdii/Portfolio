@@ -44,19 +44,38 @@ function initScrollReveal() {
   reveals.forEach((el) => io.observe(el));
 }
 
-// Skill bars animation
-function initSkillBars() {
-  const skillIO = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.querySelectorAll('.skill-bar').forEach((bar) => {
-          bar.classList.add('animate');
-        });
-      }
-    });
-  }, { threshold: 0.3 });
-  
-  document.querySelectorAll('.skills-wrapper').forEach((el) => skillIO.observe(el));
+function getOrdinal(n) {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return `${n}${s[(v - 20) % 10] || s[v] || s[0]}`;
+}
+
+// Visitor counter (increments once per day per browser profile)
+function initVisitorCounter() {
+  const visitorText = document.getElementById('visitorCountText');
+  if (!visitorText) {
+    return;
+  }
+
+  const countKey = 'portfolioVisitorCount';
+  const lastVisitKey = 'portfolioLastVisitDate';
+  const today = new Date().toISOString().slice(0, 10);
+  const lastVisit = localStorage.getItem(lastVisitKey);
+  let count = parseInt(localStorage.getItem(countKey) || '0', 10);
+
+  if (lastVisit !== today) {
+    count += 1;
+    localStorage.setItem(countKey, String(count));
+    localStorage.setItem(lastVisitKey, today);
+  }
+
+  if (!count || Number.isNaN(count)) {
+    count = 1;
+    localStorage.setItem(countKey, '1');
+    localStorage.setItem(lastVisitKey, today);
+  }
+
+  visitorText.textContent = `You are the ${getOrdinal(count)} visitor`;
 }
 
 // Smooth scrolling for navigation links
@@ -74,10 +93,33 @@ function initSmoothScroll() {
   });
 }
 
+// Navbar-only theme toggle
+function initThemeToggle() {
+  const toggleBtn = document.getElementById('themeToggle');
+  if (!toggleBtn) {
+    return;
+  }
+
+  const key = 'portfolioTheme';
+  const saved = localStorage.getItem(key);
+  if (saved === 'light') {
+    document.body.classList.add('light-mode');
+    toggleBtn.setAttribute('aria-pressed', 'true');
+  }
+
+  toggleBtn.addEventListener('click', () => {
+    document.body.classList.toggle('light-mode');
+    const isLight = document.body.classList.contains('light-mode');
+    toggleBtn.setAttribute('aria-pressed', String(isLight));
+    localStorage.setItem(key, isLight ? 'light' : 'dark');
+  });
+}
+
 // Initialize all functions when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
   initCursor();
   initScrollReveal();
-  initSkillBars();
+  initVisitorCounter();
   initSmoothScroll();
+  initThemeToggle();
 });
