@@ -1,3 +1,48 @@
+(function() {
+  document.addEventListener('DOMContentLoaded', function() {
+    const overlay  = document.getElementById('intro-overlay');
+    const line     = document.getElementById('introLine');
+    const letters  = document.querySelectorAll('.intro-name span');
+    const sub      = document.getElementById('introSub');
+    const capTop   = document.getElementById('curtainTop');
+    const capBot   = document.getElementById('curtainBottom');
+    const main     = document.getElementById('main-content');
+
+    if (!overlay) return;
+
+    // Step 1: draw line quickly
+    setTimeout(() => {
+      line.classList.add('expand');
+    }, 60);
+
+    // Step 2: reveal letters quickly, but smoothly
+    setTimeout(() => {
+      letters.forEach((l, i) => {
+        setTimeout(() => l.classList.add('show'), i * 95);
+      });
+    }, 220);
+
+    // Step 3: subtitle fades in
+    setTimeout(() => {
+      sub.classList.add('show');
+    }, 1400);
+
+    // Step 4: curtains open with a slower final reveal
+    setTimeout(() => {
+      capTop.classList.add('open');
+      capBot.classList.add('open');
+    }, 2500);
+
+    // Step 5: remove overlay and show main (total intro: 4s)
+    setTimeout(() => {
+      overlay.style.display = 'none';
+      main.style.opacity = '1';
+      main.style.transition = 'opacity 1.5s ease';
+      overlay.classList.add('done');
+    }, 4000);
+  });
+})();
+
 // Custom cursor functionality
 function initCursor() {
   const cursor = document.getElementById('cursor');
@@ -39,7 +84,7 @@ function initScrollReveal() {
         entry.target.classList.add('visible');
       }
     });
-  }, { threshold: 0.1 });
+  }, { threshold: 0.12 });
   
   reveals.forEach((el) => io.observe(el));
 }
@@ -102,10 +147,9 @@ function initGitHubCalendar() {
   const username = card.getAttribute('data-github-user');
   const totalText = document.getElementById('contribTotalText');
   const totalLine = document.getElementById('githubTotalLine');
-  const yearSelect = document.getElementById('githubYearSelect');
   const monthRow = document.getElementById('githubMonthRow');
   const grid = document.getElementById('githubGrid');
-  if (!username || !totalText || !totalLine || !yearSelect || !monthRow || !grid) {
+  if (!username || !totalText || !totalLine || !monthRow || !grid) {
     return;
   }
 
@@ -117,21 +161,26 @@ function initGitHubCalendar() {
     return date.toISOString().slice(0, 10);
   }
 
+  function atUtcMidnight(date) {
+    return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  }
+
+  function addUtcDays(date, days) {
+    const next = new Date(date);
+    next.setUTCDate(next.getUTCDate() + days);
+    return next;
+  }
+
   function getDayIndexMondayFirst(date) {
     const day = date.getUTCDay();
     return day === 0 ? 6 : day - 1;
   }
 
-  function getDayOfYear(date) {
-    const start = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-    return Math.floor((date - start) / 86400000) + 1;
-  }
-
-  function buildCalendar(contributionsMap, year) {
-    const yearStart = new Date(Date.UTC(year, 0, 1));
-    const yearEnd = new Date(Date.UTC(year, 11, 31));
-    const leadingCells = getDayIndexMondayFirst(yearStart);
-    const totalDays = Math.floor((yearEnd - yearStart) / 86400000) + 1;
+  function buildCalendar(contributionsMap) {
+    const endDate = atUtcMidnight(new Date());
+    const startDate = addUtcDays(endDate, -364);
+    const leadingCells = getDayIndexMondayFirst(startDate);
+    const totalDays = 365;
     const totalWeeks = Math.ceil((leadingCells + totalDays) / 7);
     const trailingCells = totalWeeks * 7 - (leadingCells + totalDays);
 
@@ -140,15 +189,20 @@ function initGitHubCalendar() {
     monthRow.innerHTML = '';
     grid.innerHTML = '';
 
-    monthNames.forEach((month, monthIndex) => {
-      const monthStart = new Date(Date.UTC(year, monthIndex, 1));
-      const dayOffset = getDayOfYear(monthStart) - 1;
-      const weekIndex = Math.floor((leadingCells + dayOffset) / 7);
-      const marker = document.createElement('span');
-      marker.textContent = month;
-      marker.style.gridColumn = `${weekIndex + 1} / span 4`;
-      monthRow.appendChild(marker);
-    });
+    const labeledMonths = new Set();
+    for (let dayOffset = 0; dayOffset < totalDays; dayOffset += 1) {
+      const date = addUtcDays(startDate, dayOffset);
+      const monthKey = `${date.getUTCFullYear()}-${date.getUTCMonth()}`;
+      const isMonthAnchor = dayOffset === 0 || date.getUTCDate() === 1;
+      if (isMonthAnchor && !labeledMonths.has(monthKey)) {
+        const weekIndex = Math.floor((leadingCells + dayOffset) / 7);
+        const marker = document.createElement('span');
+        marker.textContent = monthNames[date.getUTCMonth()];
+        marker.style.gridColumn = `${weekIndex + 1} / span 4`;
+        monthRow.appendChild(marker);
+        labeledMonths.add(monthKey);
+      }
+    }
 
     for (let i = 0; i < leadingCells; i += 1) {
       const emptyCell = document.createElement('span');
@@ -158,7 +212,7 @@ function initGitHubCalendar() {
 
     let totalContributions = 0;
     for (let dayOffset = 0; dayOffset < totalDays; dayOffset += 1) {
-      const date = new Date(Date.UTC(year, 0, 1 + dayOffset));
+      const date = addUtcDays(startDate, dayOffset);
       const key = toDayKey(date);
       const entry = contributionsMap.get(key) || { count: 0, level: 0 };
       const level = Number.isFinite(entry.level) ? Math.max(0, Math.min(4, entry.level)) : 0;
@@ -178,40 +232,17 @@ function initGitHubCalendar() {
       grid.appendChild(emptyCell);
     }
 
-    totalText.textContent = `${totalContributions} contributions in ${year}`;
-    totalLine.textContent = `Total: ${totalContributions} contributions in ${year}`;
+    totalText.textContent = `${totalContributions} contributions in the last year`;
+    totalLine.textContent = 'Learn how we count contributions';
   }
 
-  async function fetchYears() {
-    try {
-      const response = await fetch(`https://github-contributions.vercel.app/api/v1/${username}`);
-      if (!response.ok) {
-        throw new Error('year data unavailable');
-      }
-      const data = await response.json();
-      const years = Array.isArray(data.years)
-        ? data.years
-          .map((item) => Number.parseInt(item.year, 10))
-          .filter((value) => Number.isInteger(value))
-        : [];
-      if (years.length) {
-        return [...new Set(years)].sort((a, b) => b - a);
-      }
-    } catch (error) {
-      // Falls back to a rolling list if year metadata API is unavailable.
-    }
-
-    const nowYear = new Date().getFullYear();
-    return [nowYear, nowYear - 1, nowYear - 2];
-  }
-
-  async function renderYear(year) {
+  async function renderLastYear() {
     const token = ++renderToken;
-    totalText.textContent = `Loading contributions for ${year}...`;
+    totalText.textContent = 'Loading contributions...';
     totalLine.textContent = 'Total: loading...';
 
     try {
-      const response = await fetch(`https://github-contributions-api.jogruber.de/v4/${username}?y=${year}`);
+      const response = await fetch(`https://github-contributions-api.jogruber.de/v4/${username}`);
       if (!response.ok) {
         throw new Error('contribution data unavailable');
       }
@@ -231,7 +262,7 @@ function initGitHubCalendar() {
         }
       });
 
-      buildCalendar(map, year);
+      buildCalendar(map);
     } catch (error) {
       monthRow.innerHTML = '';
       grid.innerHTML = '';
@@ -240,16 +271,8 @@ function initGitHubCalendar() {
     }
   }
 
-  async function refreshSelectedYear(options = {}) {
-    const selectedYear = Number.parseInt(yearSelect.value, 10);
-    if (!Number.isInteger(selectedYear)) {
-      return;
-    }
-
-    const currentYear = new Date().getFullYear();
-    if (options.force || selectedYear === currentYear) {
-      await renderYear(selectedYear);
-    }
+  async function refreshLastYear() {
+    await renderLastYear();
   }
 
   function scheduleMidnightRefresh() {
@@ -259,59 +282,26 @@ function initGitHubCalendar() {
     const waitMs = Math.max(1000, next.getTime() - now.getTime());
 
     setTimeout(async () => {
-      const previousValue = yearSelect.value;
-      const years = await fetchYears();
-      yearSelect.innerHTML = '';
-      years.forEach((year) => {
-        const option = document.createElement('option');
-        option.value = String(year);
-        option.textContent = String(year);
-        yearSelect.appendChild(option);
-      });
-
-      const fallback = String(years[0]);
-      const nextValue = years.includes(Number.parseInt(previousValue, 10))
-        ? previousValue
-        : fallback;
-      yearSelect.value = nextValue;
-
-      await refreshSelectedYear({ force: true });
+      await refreshLastYear();
       scheduleMidnightRefresh();
     }, waitMs);
   }
 
-  fetchYears().then((years) => {
-    yearSelect.innerHTML = '';
-    years.forEach((year) => {
-      const option = document.createElement('option');
-      option.value = String(year);
-      option.textContent = String(year);
-      yearSelect.appendChild(option);
-    });
+  refreshLastYear();
 
-    const currentYear = new Date().getFullYear();
-    const selected = years.includes(currentYear) ? currentYear : years[0];
-    yearSelect.value = String(selected);
-    renderYear(selected);
+  setInterval(() => {
+    if (document.visibilityState === 'visible') {
+      refreshLastYear();
+    }
+  }, AUTO_REFRESH_MS);
 
-    yearSelect.addEventListener('change', () => {
-      renderYear(Number.parseInt(yearSelect.value, 10));
-    });
-
-    setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        refreshSelectedYear();
-      }
-    }, AUTO_REFRESH_MS);
-
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        refreshSelectedYear();
-      }
-    });
-
-    scheduleMidnightRefresh();
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      refreshLastYear();
+    }
   });
+
+  scheduleMidnightRefresh();
 }
 
 function initWhatsAppQuickMessage() {

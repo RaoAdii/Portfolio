@@ -3,17 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aditya</title>
+  <title>Aditya | Full Stack Developer</title>
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=1">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
 </head>
 <body>
+
+<div id="intro-overlay">
+  <div class="intro-line" id="introLine"></div>
+  <div class="intro-text">
+    <div class="intro-name" id="introName">
+      <span>A</span><span>D</span><span>I</span>
+      <span>T</span><span>Y</span><span>A</span>
+    </div>
+    <div class="intro-sub" id="introSub">PORTFOLIO 2026</div>
+  </div>
+  <div class="curtain curtain-top" id="curtainTop"></div>
+  <div class="curtain curtain-bottom" id="curtainBottom"></div>
+</div>
 
 <div class="cursor" id="cursor"></div>
 <div class="cursor-ring" id="cursorRing"></div>
 
 <nav>
-  <div class="nav-logo">Aditya</div>
+  <div class="nav-logo">Adi</div>
   <div class="nav-right">
     <div class="nav-center">
       <a href="#projects">Projects</a>
@@ -51,7 +66,7 @@
   </div>
 </nav>
 
-<main>
+<main id="main-content" style="opacity:0">
   <!-- HERO -->
   <div class="hero">
     <div class="hero-grid"></div>
@@ -74,7 +89,7 @@
       <p class="hero-sub">I design and build <span class="hero-keyword">scalable backend systems</span> and end-to-end <span class="hero-keyword">web applications</span> focused on performance, reliability, and clean architecture.<br><br>Specializing in <span class="hero-keyword">API development</span>, <span class="hero-keyword">database design</span>, and modern full-stack technologies, with a strong focus on building production-ready solutions.<br><br>Currently exploring <span class="hero-keyword">AI integration</span> and scalable system design.<br><br> <span class="hero-keyword">Open to collaborations</span>, internships, and real-world product development opportunities.</p>
       <div class="hero-cta">
         <a href="#projects" class="btn btn-primary">View Projects</a>
-        <a href="resume.pdf" class="btn btn-ghost" download>Download Resume</a>
+        <a href="Aditya%20Resume.pdf" class="btn btn-ghost" download="Aditya Resume.pdf">Download Resume</a>
       </div>
     </div>
   </div>
@@ -241,10 +256,6 @@
         <p class="contrib-total" id="contribTotalText">Loading contributions...</p>
         <div class="github-controls">
           <p class="github-user">@RaoAdii</p>
-          <label class="github-year-picker" for="githubYearSelect">
-            year
-            <select id="githubYearSelect" aria-label="Select contribution year"></select>
-          </label>
         </div>
       </div>
       <div class="github-calendar-shell" id="githubCalendarShell">
