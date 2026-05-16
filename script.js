@@ -366,6 +366,231 @@ function initThemeToggle() {
   });
 }
 
+function parseHSL(hslStr) {
+  const match = String(hslStr || '').match(/([\d.]+)\s*([\d.]+)%?\s*([\d.]+)%?/);
+  if (!match) {
+    return { h: 40, s: 80, l: 80 };
+  }
+  return { h: parseFloat(match[1]), s: parseFloat(match[2]), l: parseFloat(match[3]) };
+}
+
+function buildGlowVars(glowColor, intensity) {
+  const { h, s, l } = parseHSL(glowColor);
+  const base = `${h}deg ${s}% ${l}%`;
+  const opacities = [100, 60, 50, 40, 30, 20, 10];
+  const keys = ['', '-60', '-50', '-40', '-30', '-20', '-10'];
+  const vars = {};
+  for (let i = 0; i < opacities.length; i += 1) {
+    vars[`--glow-color${keys[i]}`] = `hsl(${base} / ${Math.min(opacities[i] * intensity, 100)}%)`;
+  }
+  return vars;
+}
+
+const GRADIENT_POSITIONS = ['80% 55%', '69% 34%', '8% 6%', '41% 38%', '86% 85%', '82% 18%', '51% 4%'];
+const GRADIENT_KEYS = ['--gradient-one', '--gradient-two', '--gradient-three', '--gradient-four', '--gradient-five', '--gradient-six', '--gradient-seven'];
+const COLOR_MAP = [0, 1, 2, 0, 1, 2, 1];
+
+function buildGradientVars(colors) {
+  const palette = Array.isArray(colors) && colors.length > 0 ? colors : ['#c084fc', '#f472b6', '#38bdf8'];
+  const vars = {};
+  for (let i = 0; i < 7; i += 1) {
+    const color = palette[Math.min(COLOR_MAP[i], palette.length - 1)];
+    vars[GRADIENT_KEYS[i]] = `radial-gradient(at ${GRADIENT_POSITIONS[i]}, ${color} 0px, transparent 50%)`;
+  }
+  vars['--gradient-base'] = `linear-gradient(${palette[0]} 0 100%)`;
+  return vars;
+}
+
+function easeOutCubic(x) {
+  return 1 - Math.pow(1 - x, 3);
+}
+
+function easeInCubic(x) {
+  return x * x * x;
+}
+
+function animateValue({
+  start = 0,
+  end = 100,
+  duration = 1000,
+  delay = 0,
+  ease = easeOutCubic,
+  onUpdate,
+  onEnd,
+}) {
+  const t0 = performance.now() + delay;
+  function tick() {
+    const elapsed = performance.now() - t0;
+    const t = Math.min(elapsed / duration, 1);
+    onUpdate(start + (end - start) * ease(t));
+    if (t < 1) {
+      requestAnimationFrame(tick);
+    } else if (typeof onEnd === 'function') {
+      onEnd();
+    }
+  }
+  setTimeout(() => requestAnimationFrame(tick), delay);
+}
+
+function applyStyles(el, styleVars) {
+  Object.entries(styleVars).forEach(([key, value]) => {
+    el.style.setProperty(key, String(value));
+  });
+}
+
+function setupBorderGlowCard(target, options = {}) {
+  if (!target || target.closest('.border-glow-card')) {
+    return;
+  }
+
+  const computed = window.getComputedStyle(target);
+  const backgroundColor = options.backgroundColor || computed.backgroundColor || '#120F17';
+  const radius = Number.isFinite(options.borderRadius)
+    ? options.borderRadius
+    : (parseFloat(computed.borderRadius) || 0);
+
+  const wrapper = document.createElement('div');
+  wrapper.className = `border-glow-card ${options.className || ''}`.trim();
+
+  const edgeLight = document.createElement('span');
+  edgeLight.className = 'edge-light';
+
+  const inner = document.createElement('div');
+  inner.className = 'border-glow-inner';
+
+  target.parentNode.insertBefore(wrapper, target);
+  inner.appendChild(target);
+  wrapper.append(edgeLight, inner);
+
+  const baseVars = {
+    '--card-bg': backgroundColor,
+    '--edge-sensitivity': options.edgeSensitivity ?? 30,
+    '--border-radius': `${radius}px`,
+    '--glow-padding': `${options.glowRadius ?? 40}px`,
+    '--cone-spread': options.coneSpread ?? 25,
+    '--fill-opacity': options.fillOpacity ?? 0.5,
+  };
+  applyStyles(wrapper, baseVars);
+  applyStyles(wrapper, buildGlowVars(options.glowColor || '40 80 80', options.glowIntensity ?? 1.0));
+  applyStyles(wrapper, buildGradientVars(options.colors || ['#c084fc', '#f472b6', '#38bdf8']));
+
+  function getCenterOfElement(el) {
+    const rect = el.getBoundingClientRect();
+    return [rect.width / 2, rect.height / 2];
+  }
+
+  function getEdgeProximity(el, x, y) {
+    const [cx, cy] = getCenterOfElement(el);
+    const dx = x - cx;
+    const dy = y - cy;
+    let kx = Infinity;
+    let ky = Infinity;
+    if (dx !== 0) {
+      kx = cx / Math.abs(dx);
+    }
+    if (dy !== 0) {
+      ky = cy / Math.abs(dy);
+    }
+    return Math.min(Math.max(1 / Math.min(kx, ky), 0), 1);
+  }
+
+  function getCursorAngle(el, x, y) {
+    const [cx, cy] = getCenterOfElement(el);
+    const dx = x - cx;
+    const dy = y - cy;
+    if (dx === 0 && dy === 0) {
+      return 0;
+    }
+    const radians = Math.atan2(dy, dx);
+    let degrees = (radians * (180 / Math.PI)) + 90;
+    if (degrees < 0) {
+      degrees += 360;
+    }
+    return degrees;
+  }
+
+  function handlePointerMove(e) {
+    const rect = wrapper.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const edge = getEdgeProximity(wrapper, x, y);
+    const angle = getCursorAngle(wrapper, x, y);
+    wrapper.style.setProperty('--edge-proximity', `${(edge * 100).toFixed(3)}`);
+    wrapper.style.setProperty('--cursor-angle', `${angle.toFixed(3)}deg`);
+  }
+
+  wrapper.addEventListener('pointermove', handlePointerMove);
+
+  if (options.animated) {
+    const angleStart = 110;
+    const angleEnd = 465;
+    wrapper.classList.add('sweep-active');
+    wrapper.style.setProperty('--cursor-angle', `${angleStart}deg`);
+
+    animateValue({
+      duration: 500,
+      onUpdate: (value) => wrapper.style.setProperty('--edge-proximity', value),
+    });
+    animateValue({
+      ease: easeInCubic,
+      duration: 1500,
+      end: 50,
+      onUpdate: (value) => {
+        wrapper.style.setProperty('--cursor-angle', `${((angleEnd - angleStart) * (value / 100)) + angleStart}deg`);
+      },
+    });
+    animateValue({
+      ease: easeOutCubic,
+      delay: 1500,
+      duration: 2250,
+      start: 50,
+      end: 100,
+      onUpdate: (value) => {
+        wrapper.style.setProperty('--cursor-angle', `${((angleEnd - angleStart) * (value / 100)) + angleStart}deg`);
+      },
+    });
+    animateValue({
+      ease: easeInCubic,
+      delay: 2500,
+      duration: 1500,
+      start: 100,
+      end: 0,
+      onUpdate: (value) => wrapper.style.setProperty('--edge-proximity', value),
+      onEnd: () => wrapper.classList.remove('sweep-active'),
+    });
+  }
+}
+
+function initBorderGlow() {
+  const projectCards = document.querySelectorAll('#projects .project-card');
+  const skillCards = document.querySelectorAll('#skills .skill-category-card');
+
+  projectCards.forEach((card, index) => {
+    setupBorderGlowCard(card, {
+      edgeSensitivity: 18,
+      glowColor: '40 80 80',
+      glowRadius: 69,
+      glowIntensity: 1.8,
+      coneSpread: 25,
+      animated: index === 0,
+      colors: ['#c084fc', '#f472b6', '#38bdf8'],
+      fillOpacity: 0.45,
+    });
+  });
+
+  skillCards.forEach((card) => {
+    setupBorderGlowCard(card, {
+      edgeSensitivity: 20,
+      glowColor: '95 80 72',
+      glowRadius: 46,
+      glowIntensity: 1.35,
+      coneSpread: 21,
+      colors: ['#c8f135', '#3dffd0', '#8be5ff'],
+      fillOpacity: 0.34,
+    });
+  });
+}
+
 // Initialize all functions when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
   initCursor();
@@ -375,6 +600,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initGitHubCalendar();
   initWhatsAppQuickMessage();
   initThemeToggle();
+  initBorderGlow();
 });
 
 const themeToggle = document.getElementById('themeToggle');
