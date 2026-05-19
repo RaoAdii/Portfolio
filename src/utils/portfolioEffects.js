@@ -1,101 +1,117 @@
-(function() {
-  document.addEventListener('DOMContentLoaded', function() {
-    const overlay  = document.getElementById('intro-overlay');
-    const line     = document.getElementById('introLine');
-    const letters  = document.querySelectorAll('.intro-name span');
-    const sub      = document.getElementById('introSub');
-    const capTop   = document.getElementById('curtainTop');
-    const capBot   = document.getElementById('curtainBottom');
-    const main     = document.getElementById('main-content');
+function runIntroAnimation() {
+  const overlay = document.getElementById('intro-overlay');
+  const line = document.getElementById('introLine');
+  const letters = document.querySelectorAll('.intro-name span');
+  const sub = document.getElementById('introSub');
+  const capTop = document.getElementById('curtainTop');
+  const capBot = document.getElementById('curtainBottom');
+  const main = document.getElementById('main-content');
+  if (!overlay || !line || !sub || !capTop || !capBot || !main) {
+    return;
+  }
 
-    if (!overlay) return;
-
-    // Step 1: draw line quickly
-    setTimeout(() => {
-      line.classList.add('expand');
-    }, 60);
-
-    // Step 2: reveal letters quickly, but smoothly
-    setTimeout(() => {
-      letters.forEach((l, i) => {
-        setTimeout(() => l.classList.add('show'), i * 95);
+  const timers = [];
+  timers.push(window.setTimeout(() => line.classList.add('expand'), 60));
+  timers.push(
+    window.setTimeout(() => {
+      letters.forEach((letter, i) => {
+        timers.push(window.setTimeout(() => letter.classList.add('show'), i * 95));
       });
-    }, 220);
-
-    // Step 3: subtitle fades in
-    setTimeout(() => {
-      sub.classList.add('show');
-    }, 1400);
-
-    // Step 4: curtains open with a slower final reveal
-    setTimeout(() => {
+    }, 220),
+  );
+  timers.push(window.setTimeout(() => sub.classList.add('show'), 1400));
+  timers.push(
+    window.setTimeout(() => {
       capTop.classList.add('open');
       capBot.classList.add('open');
-    }, 2500);
-
-    // Step 5: remove overlay and show main (total intro: 4s)
-    setTimeout(() => {
+    }, 2500),
+  );
+  timers.push(
+    window.setTimeout(() => {
       overlay.style.display = 'none';
       main.style.opacity = '1';
       main.style.transition = 'opacity 1.5s ease';
       overlay.classList.add('done');
-    }, 4000);
-  });
-})();
+    }, 4000),
+  );
 
-// Custom cursor functionality
+  return () => timers.forEach((id) => window.clearTimeout(id));
+}
+
 function initCursor() {
   const cursor = document.getElementById('cursor');
   const ring = document.getElementById('cursorRing');
-  let mx = 0, my = 0, rx = 0, ry = 0;
-  
-  document.addEventListener('mousemove', (e) => {
+  if (!cursor || !ring) {
+    return () => {};
+  }
+
+  let mx = 0;
+  let my = 0;
+  let rx = 0;
+  let ry = 0;
+  let frame = 0;
+
+  const onMouseMove = (e) => {
     mx = e.clientX;
     my = e.clientY;
-  });
-  
-  function animateCursor() {
+  };
+
+  const animateCursor = () => {
     rx += (mx - rx) * 0.18;
     ry += (my - ry) * 0.18;
     cursor.style.transform = `translate(${mx - 6}px, ${my - 6}px)`;
     ring.style.transform = `translate(${rx - 18}px, ${ry - 18}px)`;
-    requestAnimationFrame(animateCursor);
-  }
-  animateCursor();
-  
-  // Cursor interaction with links and buttons
-  document.querySelectorAll('a, button').forEach((el) => {
-    el.addEventListener('mouseenter', () => {
-      cursor.style.transform += ' scale(2)';
-      ring.style.opacity = '0';
-    });
-    el.addEventListener('mouseleave', () => {
-      ring.style.opacity = '1';
-    });
+    frame = window.requestAnimationFrame(animateCursor);
+  };
+
+  const hoverables = Array.from(document.querySelectorAll('a, button'));
+  const onEnter = () => {
+    cursor.style.transform += ' scale(2)';
+    ring.style.opacity = '0';
+  };
+  const onLeave = () => {
+    ring.style.opacity = '1';
+  };
+
+  document.addEventListener('mousemove', onMouseMove);
+  hoverables.forEach((el) => {
+    el.addEventListener('mouseenter', onEnter);
+    el.addEventListener('mouseleave', onLeave);
   });
+  animateCursor();
+
+  return () => {
+    document.removeEventListener('mousemove', onMouseMove);
+    hoverables.forEach((el) => {
+      el.removeEventListener('mouseenter', onEnter);
+      el.removeEventListener('mouseleave', onLeave);
+    });
+    window.cancelAnimationFrame(frame);
+  };
 }
 
-// Scroll reveal animation
 function initScrollReveal() {
   const reveals = document.querySelectorAll('.reveal');
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-      }
-    });
-  }, { threshold: 0.12 });
-  
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    },
+    { threshold: 0.12 },
+  );
   reveals.forEach((el) => io.observe(el));
+  return () => io.disconnect();
 }
 
 function getOrdinal(n) {
-  const s = ["th", "st", "nd", "rd"];
+  const s = ['th', 'st', 'nd', 'rd'];
   const v = n % 100;
   return `${n}${s[(v - 20) % 10] || s[v] || s[0]}`;
 }
 
-// Visitor counter (increments once per day per browser profile)
 function initVisitorCounter() {
   const visitorText = document.getElementById('visitorCountText');
   if (!visitorText) {
@@ -123,25 +139,26 @@ function initVisitorCounter() {
   visitorText.textContent = `You are the ${getOrdinal(count)} visitor`;
 }
 
-// Smooth scrolling for navigation links
 function initSmoothScroll() {
-  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-    anchor.addEventListener('click', function (e) {
-      const href = this.getAttribute('href');
-      if (href !== '#' && document.querySelector(href)) {
+  const anchors = Array.from(document.querySelectorAll('a[href^="#"]'));
+  const handlers = anchors.map((anchor) => {
+    const handler = (e) => {
+      const href = anchor.getAttribute('href');
+      if (href !== '#' && href && document.querySelector(href)) {
         e.preventDefault();
-        document.querySelector(href).scrollIntoView({
-          behavior: 'smooth'
-        });
+        document.querySelector(href).scrollIntoView({ behavior: 'smooth' });
       }
-    });
+    };
+    anchor.addEventListener('click', handler);
+    return { anchor, handler };
   });
+  return () => handlers.forEach(({ anchor, handler }) => anchor.removeEventListener('click', handler));
 }
 
 function initGitHubCalendar() {
   const card = document.querySelector('.github-activity-card[data-github-user]');
   if (!card) {
-    return;
+    return () => {};
   }
 
   const username = card.getAttribute('data-github-user');
@@ -150,33 +167,26 @@ function initGitHubCalendar() {
   const monthRow = document.getElementById('githubMonthRow');
   const grid = document.getElementById('githubGrid');
   if (!username || !totalText || !totalLine || !monthRow || !grid) {
-    return;
+    return () => {};
   }
 
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const AUTO_REFRESH_MS = 5 * 60 * 1000;
   let renderToken = 0;
 
-  function toDayKey(date) {
-    return date.toISOString().slice(0, 10);
-  }
-
-  function atUtcMidnight(date) {
-    return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
-  }
-
-  function addUtcDays(date, days) {
+  const toDayKey = (date) => date.toISOString().slice(0, 10);
+  const atUtcMidnight = (date) => new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  const addUtcDays = (date, days) => {
     const next = new Date(date);
     next.setUTCDate(next.getUTCDate() + days);
     return next;
-  }
-
-  function getDayIndexMondayFirst(date) {
+  };
+  const getDayIndexMondayFirst = (date) => {
     const day = date.getUTCDay();
     return day === 0 ? 6 : day - 1;
-  }
+  };
 
-  function buildCalendar(contributionsMap) {
+  const buildCalendar = (contributionsMap) => {
     const endDate = atUtcMidnight(new Date());
     const startDate = addUtcDays(endDate, -364);
     const leadingCells = getDayIndexMondayFirst(startDate);
@@ -234,9 +244,9 @@ function initGitHubCalendar() {
 
     totalText.textContent = `${totalContributions} contributions in the last year`;
     totalLine.textContent = 'Learn how we count contributions';
-  }
+  };
 
-  async function renderLastYear() {
+  const renderLastYear = async () => {
     const token = ++renderToken;
     totalText.textContent = 'Loading contributions...';
     totalLine.textContent = 'Total: loading...';
@@ -251,6 +261,7 @@ function initGitHubCalendar() {
       if (token !== renderToken) {
         return;
       }
+
       const list = Array.isArray(data.contributions) ? data.contributions : [];
       const map = new Map();
       list.forEach((item) => {
@@ -269,101 +280,117 @@ function initGitHubCalendar() {
       totalText.textContent = 'Unable to load live GitHub contributions right now';
       totalLine.textContent = `Visit github.com/${username} to view activity.`;
     }
-  }
+  };
 
-  async function refreshLastYear() {
+  const refreshLastYear = async () => {
     await renderLastYear();
-  }
+  };
 
-  function scheduleMidnightRefresh() {
+  let midnightTimer = 0;
+  const scheduleMidnightRefresh = () => {
     const now = new Date();
     const next = new Date(now);
     next.setHours(24, 0, 15, 0);
     const waitMs = Math.max(1000, next.getTime() - now.getTime());
 
-    setTimeout(async () => {
+    midnightTimer = window.setTimeout(async () => {
       await refreshLastYear();
       scheduleMidnightRefresh();
     }, waitMs);
-  }
+  };
 
-  refreshLastYear();
-
-  setInterval(() => {
+  const intervalId = window.setInterval(() => {
     if (document.visibilityState === 'visible') {
       refreshLastYear();
     }
   }, AUTO_REFRESH_MS);
 
-  document.addEventListener('visibilitychange', () => {
+  const visibilityHandler = () => {
     if (document.visibilityState === 'visible') {
       refreshLastYear();
     }
-  });
+  };
+  document.addEventListener('visibilitychange', visibilityHandler);
 
+  refreshLastYear();
   scheduleMidnightRefresh();
+
+  return () => {
+    window.clearInterval(intervalId);
+    window.clearTimeout(midnightTimer);
+    document.removeEventListener('visibilitychange', visibilityHandler);
+  };
 }
 
 function initWhatsAppQuickMessage() {
   const card = document.querySelector('.whatsapp-quick-card');
   if (!card) {
-    return;
+    return () => {};
   }
 
   const rawNumber = (card.getAttribute('data-wa-number') || '').replace(/\D/g, '');
   if (!rawNumber) {
-    return;
+    return () => {};
   }
 
   const fullNumber = rawNumber.length === 10 ? `91${rawNumber}` : rawNumber;
-
-  function openWhatsApp(message) {
+  const openWhatsApp = (message) => {
     const text = (message || '').trim();
     if (!text) {
       return;
     }
     const url = `https://wa.me/${fullNumber}?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
-  }
+  };
 
-  card.querySelectorAll('[data-wa-message]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      openWhatsApp(btn.getAttribute('data-wa-message') || btn.textContent);
-    });
+  const suggestedButtons = Array.from(card.querySelectorAll('[data-wa-message]'));
+  const suggestedHandlers = suggestedButtons.map((btn) => {
+    const handler = () => openWhatsApp(btn.getAttribute('data-wa-message') || btn.textContent);
+    btn.addEventListener('click', handler);
+    return { btn, handler };
   });
 
   const composeForm = card.querySelector('#waComposeForm');
   const composeInput = card.querySelector('#waCustomMessage');
-
+  let submitHandler = null;
   if (composeForm && composeInput) {
-    composeForm.addEventListener('submit', (e) => {
+    submitHandler = (e) => {
       e.preventDefault();
       openWhatsApp(composeInput.value);
       composeInput.value = '';
-    });
+    };
+    composeForm.addEventListener('submit', submitHandler);
   }
+
+  return () => {
+    suggestedHandlers.forEach(({ btn, handler }) => btn.removeEventListener('click', handler));
+    if (composeForm && submitHandler) {
+      composeForm.removeEventListener('submit', submitHandler);
+    }
+  };
 }
 
-// Navbar-only theme toggle
 function initThemeToggle() {
   const toggleBtn = document.getElementById('themeToggle');
-  if (!toggleBtn || toggleBtn.dataset.themeManaged === 'true') {
-    return;
+  if (!toggleBtn) {
+    return () => {};
   }
 
   const key = 'portfolioTheme';
-  const saved = localStorage.getItem(key);
-  if (saved === 'light') {
+  if (localStorage.getItem(key) === 'light') {
     document.body.classList.add('light-mode');
     toggleBtn.setAttribute('aria-pressed', 'true');
   }
 
-  toggleBtn.addEventListener('click', () => {
+  const onToggle = () => {
     document.body.classList.toggle('light-mode');
     const isLight = document.body.classList.contains('light-mode');
     toggleBtn.setAttribute('aria-pressed', String(isLight));
     localStorage.setItem(key, isLight ? 'light' : 'dark');
-  });
+  };
+
+  toggleBtn.addEventListener('click', onToggle);
+  return () => toggleBtn.removeEventListener('click', onToggle);
 }
 
 function parseHSL(hslStr) {
@@ -409,17 +436,9 @@ function easeInCubic(x) {
   return x * x * x;
 }
 
-function animateValue({
-  start = 0,
-  end = 100,
-  duration = 1000,
-  delay = 0,
-  ease = easeOutCubic,
-  onUpdate,
-  onEnd,
-}) {
+function animateValue({ start = 0, end = 100, duration = 1000, delay = 0, ease = easeOutCubic, onUpdate, onEnd }) {
   const t0 = performance.now() + delay;
-  function tick() {
+  const tick = () => {
     const elapsed = performance.now() - t0;
     const t = Math.min(elapsed / duration, 1);
     onUpdate(start + (end - start) * ease(t));
@@ -428,8 +447,8 @@ function animateValue({
     } else if (typeof onEnd === 'function') {
       onEnd();
     }
-  }
-  setTimeout(() => requestAnimationFrame(tick), delay);
+  };
+  window.setTimeout(() => requestAnimationFrame(tick), delay);
 }
 
 function applyStyles(el, styleVars) {
@@ -445,9 +464,7 @@ function setupBorderGlowCard(target, options = {}) {
 
   const computed = window.getComputedStyle(target);
   const backgroundColor = options.backgroundColor || computed.backgroundColor || '#120F17';
-  const radius = Number.isFinite(options.borderRadius)
-    ? options.borderRadius
-    : (parseFloat(computed.borderRadius) || 0);
+  const radius = Number.isFinite(options.borderRadius) ? options.borderRadius : parseFloat(computed.borderRadius) || 0;
 
   const wrapper = document.createElement('div');
   wrapper.className = `border-glow-card ${options.className || ''}`.trim();
@@ -474,12 +491,11 @@ function setupBorderGlowCard(target, options = {}) {
   applyStyles(wrapper, buildGlowVars(options.glowColor || '40 80 80', options.glowIntensity ?? 1.0));
   applyStyles(wrapper, buildGradientVars(options.colors || ['#c084fc', '#f472b6', '#38bdf8']));
 
-  function getCenterOfElement(el) {
+  const getCenterOfElement = (el) => {
     const rect = el.getBoundingClientRect();
     return [rect.width / 2, rect.height / 2];
-  }
-
-  function getEdgeProximity(el, x, y) {
+  };
+  const getEdgeProximity = (el, x, y) => {
     const [cx, cy] = getCenterOfElement(el);
     const dx = x - cx;
     const dy = y - cy;
@@ -492,9 +508,8 @@ function setupBorderGlowCard(target, options = {}) {
       ky = cy / Math.abs(dy);
     }
     return Math.min(Math.max(1 / Math.min(kx, ky), 0), 1);
-  }
-
-  function getCursorAngle(el, x, y) {
+  };
+  const getCursorAngle = (el, x, y) => {
     const [cx, cy] = getCenterOfElement(el);
     const dx = x - cx;
     const dy = y - cy;
@@ -502,14 +517,14 @@ function setupBorderGlowCard(target, options = {}) {
       return 0;
     }
     const radians = Math.atan2(dy, dx);
-    let degrees = (radians * (180 / Math.PI)) + 90;
+    let degrees = radians * (180 / Math.PI) + 90;
     if (degrees < 0) {
       degrees += 360;
     }
     return degrees;
-  }
+  };
 
-  function handlePointerMove(e) {
+  const handlePointerMove = (e) => {
     const rect = wrapper.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -517,8 +532,7 @@ function setupBorderGlowCard(target, options = {}) {
     const angle = getCursorAngle(wrapper, x, y);
     wrapper.style.setProperty('--edge-proximity', `${(edge * 100).toFixed(3)}`);
     wrapper.style.setProperty('--cursor-angle', `${angle.toFixed(3)}deg`);
-  }
-
+  };
   wrapper.addEventListener('pointermove', handlePointerMove);
 
   if (options.animated) {
@@ -559,14 +573,17 @@ function setupBorderGlowCard(target, options = {}) {
       onEnd: () => wrapper.classList.remove('sweep-active'),
     });
   }
+
+  return () => wrapper.removeEventListener('pointermove', handlePointerMove);
 }
 
 function initBorderGlow() {
   const projectCards = document.querySelectorAll('#projects .project-card');
   const skillCards = document.querySelectorAll('#skills .skill-category-card');
+  const cleanups = [];
 
   projectCards.forEach((card, index) => {
-    setupBorderGlowCard(card, {
+    const cleanup = setupBorderGlowCard(card, {
       edgeSensitivity: 18,
       glowColor: '40 80 80',
       glowRadius: 69,
@@ -576,10 +593,13 @@ function initBorderGlow() {
       colors: ['#c084fc', '#f472b6', '#38bdf8'],
       fillOpacity: 0.45,
     });
+    if (cleanup) {
+      cleanups.push(cleanup);
+    }
   });
 
   skillCards.forEach((card) => {
-    setupBorderGlowCard(card, {
+    const cleanup = setupBorderGlowCard(card, {
       edgeSensitivity: 20,
       glowColor: '95 80 72',
       glowRadius: 46,
@@ -588,77 +608,81 @@ function initBorderGlow() {
       colors: ['#c8f135', '#3dffd0', '#8be5ff'],
       fillOpacity: 0.34,
     });
+    if (cleanup) {
+      cleanups.push(cleanup);
+    }
   });
+
+  return () => cleanups.forEach((fn) => fn());
 }
 
 function initTiltedCard() {
   const card = document.getElementById('tiltedCard');
   if (!card) {
-    return;
+    return () => {};
   }
 
   const inner = card.querySelector('.tilted-card-inner');
   if (!inner) {
-    return;
+    return () => {};
   }
 
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const supportsHover = window.matchMedia('(hover: hover)').matches;
-
   if (prefersReducedMotion || !supportsHover) {
-    return;
+    return () => {};
   }
 
   const rotateAmplitude = 14;
   const scaleOnHover = 1.06;
-
-  function handleMouseMove(event) {
+  const handleMouseMove = (event) => {
     const rect = card.getBoundingClientRect();
     const offsetX = event.clientX - rect.left - rect.width / 2;
     const offsetY = event.clientY - rect.top - rect.height / 2;
-
     const rotationX = (offsetY / (rect.height / 2)) * -rotateAmplitude;
     const rotationY = (offsetX / (rect.width / 2)) * rotateAmplitude;
     inner.style.transform = `rotateX(${rotationX.toFixed(2)}deg) rotateY(${rotationY.toFixed(2)}deg) scale(${scaleOnHover})`;
-  }
-
-  function handleMouseEnter() {
+  };
+  const handleMouseEnter = () => {
     inner.style.transition = 'transform 0.15s ease-out';
     inner.style.transform = `scale(${scaleOnHover})`;
-  }
-
-  function handleMouseLeave() {
+  };
+  const handleMouseLeave = () => {
     inner.style.transition = 'transform 0.28s cubic-bezier(.23,1,.32,1)';
     inner.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
-  }
+  };
 
   card.addEventListener('mouseenter', handleMouseEnter);
   card.addEventListener('mousemove', handleMouseMove);
   card.addEventListener('mouseleave', handleMouseLeave);
+
+  return () => {
+    card.removeEventListener('mouseenter', handleMouseEnter);
+    card.removeEventListener('mousemove', handleMouseMove);
+    card.removeEventListener('mouseleave', handleMouseLeave);
+  };
 }
 
-// Initialize all functions when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-  initCursor();
-  initScrollReveal();
-  initVisitorCounter();
-  initSmoothScroll();
-  initGitHubCalendar();
-  initWhatsAppQuickMessage();
-  initThemeToggle();
-  initBorderGlow();
-  initTiltedCard();
-});
+export function initPortfolioEffects() {
+  const cleanups = [
+    runIntroAnimation(),
+    initCursor(),
+    initScrollReveal(),
+    initSmoothScroll(),
+    initGitHubCalendar(),
+    initWhatsAppQuickMessage(),
+    initThemeToggle(),
+    initBorderGlow(),
+    initTiltedCard(),
+  ].filter(Boolean);
 
-const themeToggle = document.getElementById('themeToggle');
-if (themeToggle) {
-  themeToggle.dataset.themeManaged = 'true';
-  themeToggle.addEventListener('click', () => {
-    document.body.classList.toggle('light-mode');
-    const isLight = document.body.classList.contains('light-mode');
-    localStorage.setItem('theme', isLight ? 'light' : 'dark');
-  });
-  if (localStorage.getItem('theme') === 'light') {
-    document.body.classList.add('light-mode');
-  }
+  initVisitorCounter();
+
+  return () => {
+    cleanups.forEach((cleanup) => {
+      if (typeof cleanup === 'function') {
+        cleanup();
+      }
+    });
+  };
 }
