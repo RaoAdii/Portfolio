@@ -591,6 +591,52 @@ function initBorderGlow() {
   });
 }
 
+function initTiltedCard() {
+  const card = document.getElementById('tiltedCard');
+  if (!card) {
+    return;
+  }
+
+  const inner = card.querySelector('.tilted-card-inner');
+  if (!inner) {
+    return;
+  }
+
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const supportsHover = window.matchMedia('(hover: hover)').matches;
+
+  if (prefersReducedMotion || !supportsHover) {
+    return;
+  }
+
+  const rotateAmplitude = 14;
+  const scaleOnHover = 1.06;
+
+  function handleMouseMove(event) {
+    const rect = card.getBoundingClientRect();
+    const offsetX = event.clientX - rect.left - rect.width / 2;
+    const offsetY = event.clientY - rect.top - rect.height / 2;
+
+    const rotationX = (offsetY / (rect.height / 2)) * -rotateAmplitude;
+    const rotationY = (offsetX / (rect.width / 2)) * rotateAmplitude;
+    inner.style.transform = `rotateX(${rotationX.toFixed(2)}deg) rotateY(${rotationY.toFixed(2)}deg) scale(${scaleOnHover})`;
+  }
+
+  function handleMouseEnter() {
+    inner.style.transition = 'transform 0.15s ease-out';
+    inner.style.transform = `scale(${scaleOnHover})`;
+  }
+
+  function handleMouseLeave() {
+    inner.style.transition = 'transform 0.28s cubic-bezier(.23,1,.32,1)';
+    inner.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
+  }
+
+  card.addEventListener('mouseenter', handleMouseEnter);
+  card.addEventListener('mousemove', handleMouseMove);
+  card.addEventListener('mouseleave', handleMouseLeave);
+}
+
 // Initialize all functions when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
   initCursor();
@@ -601,6 +647,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initWhatsAppQuickMessage();
   initThemeToggle();
   initBorderGlow();
+  initTiltedCard();
 });
 
 const themeToggle = document.getElementById('themeToggle');

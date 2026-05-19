@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Aditya | Full Stack Developer</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=DM+Sans:wght@400;500;700;900&family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <link rel="icon" type="image/x-icon" href="favicon.ico?v=1">
   <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
@@ -71,17 +71,6 @@
   <div class="hero">
     <div class="hero-grid"></div>
     <div class="blob"></div>
-    <div class="hero-side-anim" aria-hidden="true">
-      <div class="bat-track">
-        <div class="bat"></div>
-      </div>
-      <div class="bat-track bat-track-2">
-        <div class="bat"></div>
-      </div>
-      <div class="bat-track bat-track-3">
-        <div class="bat"></div>
-      </div>
-    </div>
     <div class="hero-content">
       <a href="#contact" class="hero-tag">open to work</a>
       <h1>Aditya</h1>
@@ -89,8 +78,26 @@
       <p class="hero-sub">I design and build <span class="hero-keyword">scalable backend systems</span> and end-to-end <span class="hero-keyword">web applications</span> focused on performance, reliability, and clean architecture.<br><br>Specializing in <span class="hero-keyword">API development</span>, <span class="hero-keyword">database design</span>, and modern full-stack technologies, with a strong focus on building production-ready solutions.<br><br>Currently exploring <span class="hero-keyword">AI integration</span> and scalable system design.<br><br> <span class="hero-keyword">Open to collaborations</span>, internships, and real-world product development opportunities.</p>
       <div class="hero-cta">
         <a href="#projects" class="btn btn-primary">View Projects</a>
-        <a href="Aditya%20Resume.pdf" class="btn btn-ghost" download="Aditya Resume.pdf">Download Resume</a>
+        <a href="resume-Aditya.pdf" class="btn btn-ghost" download="resume-Aditya.pdf">Download Resume</a>
       </div>
+    </div>
+    <div class="hero-media">
+      <figure class="tilted-card-figure" id="tiltedCard" aria-label="Aditya profile photo card">
+        <div class="tilted-card-inner">
+          <picture>
+            <source srcset="public/images/profile.webp?v=2" type="image/webp">
+            <img
+              src="public/images/profile.jpg?v=2"
+              alt="Aditya profile photo"
+              class="tilted-card-img"
+              loading="lazy"
+              decoding="async"
+              width="480"
+              height="480"
+            >
+          </picture>
+        </div>
+      </figure>
     </div>
   </div>
 
@@ -106,58 +113,19 @@
 
       <div class="project-card">
         <div class="project-num">01</div>
-        <h3>Treno</h3>
-        <p>Full-stack railway ticket booking system with C++ REST API backend and responsive HTML/Tailwind frontend. Features train search, seat allocation, user authentication, and Docker containerization.</p>
+        <h3>LNF</h3>
+        <p>Lost and Found Hub for residential communities with secure authentication, post lifecycle management, image uploads, and threaded in-app messaging between users.</p>
         <div class="project-tags">
-          <span class="tag">C++</span>
-          <span class="tag">REST API</span>
-          <span class="tag">HTML/Tailwind</span>
-          <span class="tag">Docker</span>
+          <span class="tag">MERN</span>
+          <span class="tag">React + Vite</span>
+          <span class="tag">Node/Express</span>
+          <span class="tag">MongoDB</span>
         </div>
-        <a href="https://github.com/RaoAdii/Treno" target="_blank" class="project-link">View Project</a>
+        <a href="https://github.com/RaoAdii/LNF" target="_blank" class="project-link">View Project</a>
       </div>
 
       <div class="project-card">
         <div class="project-num">02</div>
-        <h3>Skybit</h3>
-        <p>Modern real-time weather app with live data integration. Features responsive design, intuitive UX, and dynamic weather visualization with smooth animations.</p>
-        <div class="project-tags">
-          <span class="tag">JavaScript</span>
-          <span class="tag">API Integration</span>
-          <span class="tag">HTML/CSS</span>
-          <span class="tag">Responsive Design</span>
-        </div>
-        <a href="https://github.com/RaoAdii/Skybit" target="_blank" class="project-link">View Project</a>
-      </div>
-
-      <div class="project-card">
-        <div class="project-num">03</div>
-        <h3>EcoLearn</h3>
-        <p>Comprehensive educational platform with gamification, analytics dashboard, and real-time environmental data. Features quiz engine, achievement system, leaderboards, and role-based access control.</p>
-        <div class="project-tags">
-          <span class="tag">Python</span>
-          <span class="tag">Streamlit</span>
-          <span class="tag">SQLAlchemy</span>
-          <span class="tag">Pandas/Plotly</span>
-        </div>
-        <a href="https://github.com/RaoAdii/EcoLearn" target="_blank" class="project-link">View Project</a>
-      </div>
-
-      <div class="project-card">
-        <div class="project-num">04</div>
-        <h3>Lumis</h3>
-        <p>Advanced voice-enabled AI assistant with multiple implementations (CLI, Async, GUI, Advanced GUI). Features Gemini API integration, speech recognition, NLU engine, tool-based automation, and modular skill architecture.</p>
-        <div class="project-tags">
-          <span class="tag">Python</span>
-          <span class="tag">Gemini API</span>
-          <span class="tag">Speech Recognition</span>
-          <span class="tag">Tkinter GUI</span>
-        </div>
-        <a href="https://github.com/RaoAdii/Lumis" target="_blank" class="project-link">View Project</a>
-      </div>
-
-      <div class="project-card">
-        <div class="project-num">05</div>
         <h3>Terra 3.0</h3>
         <p>Gamified environmental education platform with carbon tracking, eco tools, AI-powered features, and leaderboard-driven engagement. Built with a scalable modular Python architecture and real-world API integrations.</p>
         <div class="project-tags">
@@ -170,16 +138,55 @@
       </div>
 
       <div class="project-card">
-        <div class="project-num">06</div>
-        <h3>LNF</h3>
-        <p>Lost and Found Hub for residential communities with secure authentication, post lifecycle management, image uploads, and threaded in-app messaging between users.</p>
+        <div class="project-num">03</div>
+        <h3>Lumis</h3>
+        <p>Advanced voice-enabled AI assistant with multiple implementations (CLI, Async, GUI, Advanced GUI). Features Gemini API integration, speech recognition, NLU engine, tool-based automation, and modular skill architecture.</p>
         <div class="project-tags">
-          <span class="tag">MERN</span>
-          <span class="tag">React + Vite</span>
-          <span class="tag">Node/Express</span>
-          <span class="tag">MongoDB</span>
+          <span class="tag">Python</span>
+          <span class="tag">Gemini API</span>
+          <span class="tag">Speech Recognition</span>
+          <span class="tag">Tkinter GUI</span>
         </div>
-        <a href="https://github.com/RaoAdii/LNF" target="_blank" class="project-link">View Project</a>
+        <a href="https://github.com/RaoAdii/Lumis" target="_blank" class="project-link">View Project</a>
+      </div>
+
+      <div class="project-card">
+        <div class="project-num">04</div>
+        <h3>Treno</h3>
+        <p>Full-stack railway ticket booking system with C++ REST API backend and responsive HTML/Tailwind frontend. Features train search, seat allocation, user authentication, and Docker containerization.</p>
+        <div class="project-tags">
+          <span class="tag">C++</span>
+          <span class="tag">REST API</span>
+          <span class="tag">HTML/Tailwind</span>
+          <span class="tag">Docker</span>
+        </div>
+        <a href="https://github.com/RaoAdii/Treno" target="_blank" class="project-link">View Project</a>
+      </div>
+
+      <div class="project-card">
+        <div class="project-num">05</div>
+        <h3>Skybit</h3>
+        <p>Modern real-time weather app with live data integration. Features responsive design, intuitive UX, and dynamic weather visualization with smooth animations.</p>
+        <div class="project-tags">
+          <span class="tag">JavaScript</span>
+          <span class="tag">API Integration</span>
+          <span class="tag">HTML/CSS</span>
+          <span class="tag">Responsive Design</span>
+        </div>
+        <a href="https://github.com/RaoAdii/Skybit" target="_blank" class="project-link">View Project</a>
+      </div>
+
+      <div class="project-card">
+        <div class="project-num">06</div>
+        <h3>EcoLearn</h3>
+        <p>Comprehensive educational platform with gamification, analytics dashboard, and real-time environmental data. Features quiz engine, achievement system, leaderboards, and role-based access control.</p>
+        <div class="project-tags">
+          <span class="tag">Python</span>
+          <span class="tag">Streamlit</span>
+          <span class="tag">SQLAlchemy</span>
+          <span class="tag">Pandas/Plotly</span>
+        </div>
+        <a href="https://github.com/RaoAdii/EcoLearn" target="_blank" class="project-link">View Project</a>
       </div>
 
     </div>
@@ -290,33 +297,33 @@
   <section id="education">
     <div class="reveal">
       <p class="section-label">/ Background</p>
-      <h2 class="section-title">Education &amp; Certs</h2>
+      <h2 class="section-title">Achievements</h2>
     </div>
     <div class="edu-list reveal">
-
-      <div class="edu-item">
-        <div>
-          <div class="edu-degree">B.Tech in Computer Science &amp; Engineering</div>
-          <div class="edu-school">SRM University, AP</div>
-          <div class="edu-desc">Focused on Data Structures, Algorithms, Operating Systems, and Database Management. Active contributor to hackathons and open-source projects. 211 contributions on GitHub.</div>
-        </div>
-        <div class="edu-year">Ongoing</div>
-      </div>
-
-      <div class="edu-item">
-        <div>
-          <div class="edu-degree">Smart India Hackathon (SIH)</div>
-          <div class="edu-school">Government of India Initiative</div>
-          <div class="edu-desc">Qualified for 2nd round. Developed innovative solutions for real-world problems in a competitive hackathon environment.</div>
-        </div>
-        <div class="edu-year">2025</div>
-      </div>
 
       <div class="edu-item">
         <div>
           <div class="edu-degree">Designathon: Top 5 Solo Finalist</div>
           <div class="edu-school">Manipal University Jaipur</div>
           <div class="edu-desc">Designed a concept app blending Instagram, Snapchat, TikTok, and Reddit with social sharing, real-time authenticity, and creative interaction. Progressed from online round to Top 5 finalist by competing solo in the second round. Learned diverse design approaches, exchanged ideas with passionate creators, and built confidence stepping out of comfort zone.</div>
+        </div>
+        <div class="edu-year">2026</div>
+      </div>
+
+      <div class="edu-item">
+        <div>
+          <div class="edu-degree">404 Not Found - 2nd Place</div>
+          <div class="edu-school">Infinitus 2026 | 404: Treasure Not Found</div>
+          <div class="edu-desc">Secured 2nd place in a fast-paced 3-hour scavenger hunt. Solved multi-layered challenges across coding, web analysis, image forensics, and debugging under time pressure.</div>
+        </div>
+        <div class="edu-year">2026</div>
+      </div>
+
+      <div class="edu-item">
+        <div>
+          <div class="edu-degree">ImmersiveX Ideathon - Visionary Award</div>
+          <div class="edu-school">Organized by GeeksforGeeks SRMUAP</div>
+          <div class="edu-desc">Introduced MindFlow XR, a neuro-adaptive VR classroom concept that uses real-time cognitive state adjustment to personalize learning. Recognized with the Visionary Award for reimagining how education evolves with technology.</div>
         </div>
         <div class="edu-year">2026</div>
       </div>
@@ -334,18 +341,34 @@
       <p>Open to full-time roles, freelance projects, and interesting collaborations. Drop a message.</p>
     </div>
     <div class="contact-grid reveal">
-      <form class="contact-form" action="mailto:ceaser.adi00@gmail.com" method="post" enctype="text/plain">
-        <label for="name">Name</label>
-        <input id="name" name="Name" type="text" required>
+      <div class="whatsapp-quick-card" data-wa-number="7080804365">
+        <div class="wa-head">
+          <div class="wa-icon" aria-hidden="true">W</div>
+          <div>
+            <div class="wa-title">quick messages</div>
+            <div class="wa-subtitle">opens in WhatsApp</div>
+          </div>
+        </div>
 
-        <label for="email">Email</label>
-        <input id="email" name="Email" type="email" required>
+        <div class="wa-suggested-wrap">
+          <button type="button" class="wa-suggested" data-wa-message="Let's build something amazing together">Let's build something amazing together</button>
+          <button type="button" class="wa-suggested" data-wa-message="I'm interested in backend collaborations">I'm interested in backend collaborations</button>
+          <button type="button" class="wa-suggested" data-wa-message="Can we discuss your tech stack?">Can we discuss your tech stack?</button>
+          <button type="button" class="wa-suggested" data-wa-message="Tell me about your latest projects">Tell me about your latest projects</button>
+          <button type="button" class="wa-suggested" data-wa-message="Open to full-stack opportunities">Open to full-stack opportunities</button>
+          <button type="button" class="wa-suggested" data-wa-message="Let's connect on GitHub/LinkedIn">Let's connect on GitHub/LinkedIn</button>
+        </div>
 
-        <label for="message">Message</label>
-        <textarea id="message" name="Message" rows="5" required></textarea>
-
-        <button class="btn btn-primary" type="submit">Send</button>
-      </form>
+        <form class="wa-compose" id="waComposeForm">
+          <input
+            id="waCustomMessage"
+            type="text"
+            placeholder="Write your custom message..."
+            aria-label="Type your custom WhatsApp message"
+          >
+          <button type="submit" class="wa-send-btn">Send</button>
+        </form>
+      </div>
       <div class="contact-social-card">
         <p class="contact-social-title">Connect</p>
         <div class="contact-social-links">
@@ -356,32 +379,6 @@
           <a href="mailto:ceaser.adi00@gmail.com">ceaser.adi00@gmail.com</a>
         </div>
       </div>
-    </div>
-
-    <div class="whatsapp-quick-card reveal" data-wa-number="917080804365">
-      <div class="wa-head">
-        <div class="wa-icon" aria-hidden="true">W</div>
-        <div>
-          <div class="wa-title">quick message</div>
-          <div class="wa-subtitle">opens in WhatsApp</div>
-        </div>
-      </div>
-
-      <div class="wa-suggested-wrap">
-        <button type="button" class="wa-suggested" data-wa-message="Hey! Thanks for visiting my portfolio.">Hey! Thanks for visiting my portfolio.</button>
-        <button type="button" class="wa-suggested" data-wa-message="Feel free to drop a message. I'd love to hear from you!">Feel free to drop a message. I'd love to hear from you!</button>
-      </div>
-
-      <div class="wa-chip-row">
-        <button type="button" class="wa-chip" data-wa-message="Hi, I'd like to collaborate!">Hi, I'd like to collaborate!</button>
-        <button type="button" class="wa-chip" data-wa-message="I have a project idea.">I have a project idea</button>
-        <button type="button" class="wa-chip" data-wa-message="Let's connect!">Let's connect!</button>
-      </div>
-
-      <form class="wa-compose" id="waComposeForm">
-        <input id="waCustomMessage" type="text" placeholder="Type your message..." aria-label="Type your WhatsApp message">
-        <button type="submit" class="wa-send-btn">&gt; send</button>
-      </form>
     </div>
   </section>
 </main>
